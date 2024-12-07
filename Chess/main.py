@@ -10,7 +10,8 @@ fps = 60
 
 #Variables
 run = True
-selection = 0
+EnPassantL = False
+EnPassantR = False
 turn = 0 
 counter = 0
 game = []
@@ -23,6 +24,8 @@ bkm = 0
 wr1m = 0
 wr2m = 0
 wkm = 0
+files = 'abcdefgh'
+rank = '12345678'
 
 wp = 'white pawn'
 bp = 'black pawn'
@@ -139,7 +142,11 @@ def CheckBishop(posX, posY, color):
     return legal_moves
 
 def CheckPawn(posX, posY, color):
+    global EnPassantL
+    global EnPassantR
     legal_moves = []
+    EnPassantL = False
+    EnPassantR = False
     if color == 'white':
         k = -1
     else:
@@ -158,6 +165,23 @@ def CheckPawn(posX, posY, color):
         if (posX-1) >= 0 and board[posY + k][posX - 1] != 0 and color not in board[posY + k][posX - 1]:
             legal_moves.append((posX-1, posY+k))
     
+    if color == 'white' and (posX + 1) < 8 and posY == 3 and game[-1] == Convert_to_chess_notation((posX+1, posY-2), (posX+1, posY)) and board[posY][posX+1] == 'black pawn':
+        EnPassantR = True
+        legal_moves.append((posX+1, posY-1))
+
+    elif color == 'white' and (posX - 1) >= 0 and posY == 3 and game[-1] == Convert_to_chess_notation((posX-1, posY-2), (posX-1, posY)) and board[posY][posX-1] == 'black pawn':
+        EnPassantL = True
+        legal_moves.append((posX-1, posY-1))
+        
+    elif color == 'black' and (posX + 1) < 8 and posY == 4 and game[-1] == Convert_to_chess_notation((posX+1, posY+2), (posX+1, posY)) and board[posY][posX+1] == 'white pawn':
+        EnPassantR = True
+        legal_moves.append((posX+1, posY+1))
+        
+    elif color == 'black' and (posX - 1) >= 0 and posY == 4 and game[-1] == Convert_to_chess_notation((posX-1, posY+2), (posX-1, posY)) and board[posY][posX-1] == 'white pawn':
+        EnPassantL = True
+        legal_moves.append((posX-1, posY+1))
+        
+
     return legal_moves
 
 def CheckKing(posX, posY, color):
@@ -169,13 +193,13 @@ def CheckKing(posX, posY, color):
                     legal_moves.append((posX+i, posY+j))
 
     checked = CheckIfChecked()
-    if turn < 2 and (posX - 2) >= 0 and wr1m == 0 and wkm == 0 and (posX - 1, posY) not in black_legal_moves and board[posY][posX - 1] == 0 and (posX - 2, posY) not in black_legal_moves and board[posY][posX - 2] == 0 and not checked[0]:
+    if color == 'white' and (posX - 2) >= 0 and wr1m == 0 and wkm == 0 and (posX - 1, posY) not in black_legal_moves and board[posY][posX - 1] == 0 and (posX - 2, posY) not in black_legal_moves and board[posY][posX - 2] == 0 and not checked[0]:
         legal_moves.append((posX - 2, posY))
-    elif turn < 2 and (posX + 2) < 8 and wr2m == 0 and wkm == 0 and (posX + 1, posY) not in black_legal_moves and board[posY][posX + 1] == 0 and (posX + 2, posY) not in black_legal_moves and board[posY][posX + 2] == 0 and not checked[0]:
+    elif color == 'white' and (posX + 2) < 8 and wr2m == 0 and wkm == 0 and (posX + 1, posY) not in black_legal_moves and board[posY][posX + 1] == 0 and (posX + 2, posY) not in black_legal_moves and board[posY][posX + 2] == 0 and not checked[0]:
         legal_moves.append((posX + 2, posY))
-    elif turn >= 2 and (posX - 2) >= 0 and br1m == 0 and bkm == 0 and (posX - 1, posY) not in white_legal_moves and board[posY][posX - 1] == 0 and (posX - 2, posY) not in white_legal_moves and board[posY][posX - 2] == 0 and not checked[1]:
+    elif color == 'black' and (posX - 2) >= 0 and br1m == 0 and bkm == 0 and (posX - 1, posY) not in white_legal_moves and board[posY][posX - 1] == 0 and (posX - 2, posY) not in white_legal_moves and board[posY][posX - 2] == 0 and not checked[1]:
         legal_moves.append((posX - 2, posY))
-    elif turn >= 2 and (posX + 2) < 8 and br1m == 0 and bkm == 0 and (posX + 1, posY) not in white_legal_moves and board[posY][posX + 1] == 0 and (posX + 2, posY) not in white_legal_moves and board[posY][posX + 2] == 0 and not checked[1]:
+    elif color == 'black' and (posX + 2) < 8 and br1m == 0 and bkm == 0 and (posX + 1, posY) not in white_legal_moves and board[posY][posX + 1] == 0 and (posX + 2, posY) not in white_legal_moves and board[posY][posX + 2] == 0 and not checked[1]:
         legal_moves.append((posX + 2, posY))
 
     return legal_moves
@@ -296,7 +320,7 @@ def DrawBoard():
         pygame.draw.rect(screen, 'dark red', [bk_pos[0]*100, bk_pos[1]*100, 100, 100], 5)
 
 def Convert_to_chess_notation(sq1, sq2):
-    pass
+    return f'{files[sq1[0]]}{rank[sq1[1]]}-{files[sq2[0]]}{rank[sq2[1]]}'
 
 #Mainloop
 while run:
@@ -304,6 +328,8 @@ while run:
     screen.fill('light gray')
     check_all_legal_moves()
     DrawBoard()
+
+    print(f'{EnPassantL}, {EnPassantR}')
 
     if counter < 30:
         counter += 1
@@ -316,10 +342,13 @@ while run:
             run = False
         
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and event.pos[0] <= 800 and event.pos[1] <= 800:
+
+            # Move Piece
             if legal_moves != None and (turn == 1 or turn == 3) and (event.pos[0]//100, event.pos[1]//100) in legal_moves:
-                
                 if turn == 3:
                     piece = board[selected_piece_pos[1]][selected_piece_pos[0]]
+
+                    #Check Castling Move
                     if piece == 'black king' and (event.pos[0]//100, event.pos[1]//100) in [(selected_piece_pos[0] + 2, selected_piece_pos[1]), (selected_piece_pos[0] - 2, selected_piece_pos[1])]:
                         board[selected_piece_pos[1]][selected_piece_pos[0]] = 0
                         board[event.pos[1]//100][event.pos[0]//100] = piece
@@ -327,11 +356,26 @@ while run:
                             r = board[selected_piece_pos[1]][selected_piece_pos[0] + 3]
                             board[selected_piece_pos[1]][selected_piece_pos[0] + 3] = 0
                             board[selected_piece_pos[1]][selected_piece_pos[0] + 1] = r
+                            game.append('O-O')
+
                         else:
                             r = board[selected_piece_pos[1]][selected_piece_pos[0] - 4]
                             board[selected_piece_pos[1]][selected_piece_pos[0] - 4] = 0
                             board[selected_piece_pos[1]][selected_piece_pos[0] - 1] = r
+                            game.append('O-O-O')
+
+                        turn = 0
+
+                    #Check En-Passant Move
+                    elif piece == 'black pawn' and event.pos[0]//100 in [selected_piece_pos[0]-1, selected_piece_pos[0]+1] and (EnPassantR or EnPassantL):
+                        board[selected_piece_pos[1]][selected_piece_pos[0]] = 0
+                        board[event.pos[1]//100][event.pos[0]//100] = piece
+                        if (event.pos[0]//100, event.pos[1]//100) == (selected_piece_pos[0]+1, selected_piece_pos[1]+1) and EnPassantR:
+                            board[selected_piece_pos[1]][selected_piece_pos[0]+1] = 0
+                        else:
+                            board[selected_piece_pos[1]][selected_piece_pos[0]-1] = 0
                         
+
                         turn = 0
 
                     else:
@@ -347,6 +391,7 @@ while run:
                             turn = 2
 
                         else:
+                            game.append(Convert_to_chess_notation(selected_piece_pos, (event.pos[0]//100, event.pos[1]//100)))
                             if selected_piece_pos == [0, 0] and piece == 'black rook':
                                 br1m = 1
                             elif selected_piece_pos == [7, 0] and piece == 'black rook':
@@ -358,6 +403,8 @@ while run:
 
                 else:
                     piece = board[selected_piece_pos[1]][selected_piece_pos[0]]
+
+                    # Check Castling Move
                     if piece == 'white king' and (event.pos[0]//100, event.pos[1]//100) in [(selected_piece_pos[0] + 2, selected_piece_pos[1]), (selected_piece_pos[0] - 2, selected_piece_pos[1])]:
                         board[selected_piece_pos[1]][selected_piece_pos[0]] = 0
                         board[event.pos[1]//100][event.pos[0]//100] = piece
@@ -365,10 +412,25 @@ while run:
                             r = board[selected_piece_pos[1]][selected_piece_pos[0] + 3]
                             board[selected_piece_pos[1]][selected_piece_pos[0] + 3] = 0
                             board[selected_piece_pos[1]][selected_piece_pos[0] + 1] = r
+                            game.append('O-O')
+
                         else:
                             r = board[selected_piece_pos[1]][selected_piece_pos[0] - 4]
                             board[selected_piece_pos[1]][selected_piece_pos[0] - 4] = 0
                             board[selected_piece_pos[1]][selected_piece_pos[0] - 1] = r
+                            game.append('O-O-O')
+
+                        turn += 1
+
+                    #Check En-Passant Move
+                    elif piece == 'white pawn' and (event.pos[0]//100, event.pos[1]//100) in [(selected_piece_pos[0]+1, selected_piece_pos[1]-1), (selected_piece_pos[0]-1, selected_piece_pos[1]-1)] and (EnPassantL or EnPassantR):
+                        board[selected_piece_pos[1]][selected_piece_pos[0]] = 0
+                        board[event.pos[1]//100][event.pos[0]//100] = piece
+                        if (event.pos[0]//100, event.pos[1]//100) == (selected_piece_pos[0]+1, selected_piece_pos[1]+1) and EnPassantR:
+                            board[selected_piece_pos[1]][selected_piece_pos[0]+1] = 0
+
+                        else:
+                            board[selected_piece_pos[1]][selected_piece_pos[0]-1] = 0
 
                         turn += 1
 
@@ -385,6 +447,7 @@ while run:
                             turn = 0
 
                         else:
+                            game.append(Convert_to_chess_notation(selected_piece_pos, (event.pos[0]//100, event.pos[1]//100)))
                             if selected_piece_pos == [0, 7] and piece == 'white rook':
                                 wr1m = 1
                             elif selected_piece_pos == [7, 7] and piece == 'white rook':
@@ -396,6 +459,7 @@ while run:
 
                 legal_moves.clear()
             
+            # Select Piece
             elif turn == 0 or turn == 2:
                 if ('white' in str(board[event.pos[1]//100][event.pos[0]//100]) and turn < 2) or ('black' in str(board[event.pos[1]//100][event.pos[0]//100]) and turn > 1):
                     turn += 1
