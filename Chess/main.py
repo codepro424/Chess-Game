@@ -10,8 +10,7 @@ fps = 60
 
 #Variables
 run = True
-EnPassantL = False
-EnPassantR = False
+#possibleEnpassants = []
 turn = 0 
 counter = 0
 game = []
@@ -142,11 +141,8 @@ def CheckBishop(posX, posY, color):
     return legal_moves
 
 def CheckPawn(posX, posY, color):
-    global EnPassantL
-    global EnPassantR
+    global possibleEnpassants
     legal_moves = []
-    EnPassantL = False
-    EnPassantR = False
     if color == 'white':
         k = -1
     else:
@@ -165,22 +161,21 @@ def CheckPawn(posX, posY, color):
         if (posX-1) >= 0 and board[posY + k][posX - 1] != 0 and color not in board[posY + k][posX - 1]:
             legal_moves.append((posX-1, posY+k))
     
-    if color == 'white' and (posX + 1) < 8 and posY == 3 and game[-1] == Convert_to_chess_notation((posX+1, posY-2), (posX+1, posY)) and board[posY][posX+1] == 'black pawn':
-        EnPassantR = True
-        legal_moves.append((posX+1, posY-1))
+    # if color == 'white' and (posX + 1) < 8 and posY == 3 and game[-1] == Convert_to_chess_notation((posX+1, posY-2), (posX+1, posY)) and board[posY][posX+1] == 'black pawn':
+    #     possibleEnpassants = [(posX, posY), 'R']
+    #     legal_moves.append((posX+1, posY-1))
 
-    elif color == 'white' and (posX - 1) >= 0 and posY == 3 and game[-1] == Convert_to_chess_notation((posX-1, posY-2), (posX-1, posY)) and board[posY][posX-1] == 'black pawn':
-        EnPassantL = True
-        legal_moves.append((posX-1, posY-1))
+    # elif color == 'white' and (posX - 1) >= 0 and posY == 3 and game[-1] == Convert_to_chess_notation((posX-1, posY-2), (posX-1, posY)) and board[posY][posX-1] == 'black pawn':
+    #     possibleEnpassants = [(posX, posY), 'L']
+    #     legal_moves.append((posX-1, posY-1))
         
-    elif color == 'black' and (posX + 1) < 8 and posY == 4 and game[-1] == Convert_to_chess_notation((posX+1, posY+2), (posX+1, posY)) and board[posY][posX+1] == 'white pawn':
-        EnPassantR = True
-        legal_moves.append((posX+1, posY+1))
+    # elif color == 'black' and (posX + 1) < 8 and posY == 4 and game[-1] == Convert_to_chess_notation((posX+1, posY+2), (posX+1, posY)) and board[posY][posX+1] == 'white pawn':
+    #     possibleEnpassants = [(posX, posY), 'R']
+    #     legal_moves.append((posX+1, posY+1))
         
-    elif color == 'black' and (posX - 1) >= 0 and posY == 4 and game[-1] == Convert_to_chess_notation((posX-1, posY+2), (posX-1, posY)) and board[posY][posX-1] == 'white pawn':
-        EnPassantL = True
-        legal_moves.append((posX-1, posY+1))
-        
+    # elif color == 'black' and (posX - 1) >= 0 and posY == 4 and game[-1] == Convert_to_chess_notation((posX-1, posY+2), (posX-1, posY)) and board[posY][posX-1] == 'white pawn':
+    #     possibleEnpassants = [(posX, posY), 'L']
+    #     legal_moves.append((posX-1, posY+1))
 
     return legal_moves
 
@@ -275,27 +270,27 @@ def DrawBoard():
         for j in range(len(board[i])):
             if board[i][j] == 'white pawn':
                 screen.blit(WP, (j*100, i*100))
-            if board[i][j] == 'black pawn':
+            elif board[i][j] == 'black pawn':
                 screen.blit(BP, (j*100, i*100))
-            if board[i][j] == 'white knight':
+            elif board[i][j] == 'white knight':
                 screen.blit(WN, (j*100, i*100))
-            if board[i][j] == 'white bishop':
+            elif board[i][j] == 'white bishop':
                 screen.blit(WB, (j*100, i*100))
-            if board[i][j] == 'white rook':
+            elif board[i][j] == 'white rook':
                 screen.blit(WR, (j*100, i*100))
-            if board[i][j] == 'white queen':
+            elif board[i][j] == 'white queen':
                 screen.blit(WQ, (j*100, i*100))
-            if board[i][j] == 'white king':
+            elif board[i][j] == 'white king':
                 screen.blit(WK, (j*100, i*100))
-            if board[i][j] == 'black king':
+            elif board[i][j] == 'black king':
                 screen.blit(BK, (j*100, i*100))
-            if board[i][j] == 'black knight':
+            elif board[i][j] == 'black knight':
                 screen.blit(BN, (j*100, i*100))
-            if board[i][j] == 'black bishop':
+            elif board[i][j] == 'black bishop':
                 screen.blit(BB, (j*100, i*100))
-            if board[i][j] == 'black rook':
+            elif board[i][j] == 'black rook':
                 screen.blit(BR, (j*100, i*100))
-            if board[i][j] == 'black queen':
+            elif board[i][j] == 'black queen':
                 screen.blit(BQ, (j*100, i*100))
 
     if turn == 1 or turn == 3:
@@ -329,7 +324,16 @@ while run:
     check_all_legal_moves()
     DrawBoard()
 
-    print(f'{EnPassantL}, {EnPassantR}')
+    number_of_pieces = 0
+    if len(white_legal_moves) == 0 or len(black_legal_moves) == 0:
+        run = False
+    for i in range(len(board)):
+        for j in range(board[i]):
+            if board[i][j] != 0:
+                number_of_pieces += 1
+    
+    if number_of_pieces == 2:
+        run = False
 
     if counter < 30:
         counter += 1
@@ -352,7 +356,7 @@ while run:
                     if piece == 'black king' and (event.pos[0]//100, event.pos[1]//100) in [(selected_piece_pos[0] + 2, selected_piece_pos[1]), (selected_piece_pos[0] - 2, selected_piece_pos[1])]:
                         board[selected_piece_pos[1]][selected_piece_pos[0]] = 0
                         board[event.pos[1]//100][event.pos[0]//100] = piece
-                        if board[selected_piece_pos[1]][selected_piece_pos[0] + 3] == 'black rook':
+                        if (event.pos[0]//100, event.pos[1]//100) == (selected_piece_pos[0] + 2, selected_piece_pos[1]):
                             r = board[selected_piece_pos[1]][selected_piece_pos[0] + 3]
                             board[selected_piece_pos[1]][selected_piece_pos[0] + 3] = 0
                             board[selected_piece_pos[1]][selected_piece_pos[0] + 1] = r
@@ -367,16 +371,17 @@ while run:
                         turn = 0
 
                     #Check En-Passant Move
-                    elif piece == 'black pawn' and event.pos[0]//100 in [selected_piece_pos[0]-1, selected_piece_pos[0]+1] and (EnPassantR or EnPassantL):
-                        board[selected_piece_pos[1]][selected_piece_pos[0]] = 0
-                        board[event.pos[1]//100][event.pos[0]//100] = piece
-                        if (event.pos[0]//100, event.pos[1]//100) == (selected_piece_pos[0]+1, selected_piece_pos[1]+1) and EnPassantR:
-                            board[selected_piece_pos[1]][selected_piece_pos[0]+1] = 0
-                        else:
-                            board[selected_piece_pos[1]][selected_piece_pos[0]-1] = 0
-                        
-
-                        turn = 0
+                    # elif len(possibleEnpassants) != 0 and piece == 'black pawn' and event.pos[0]//100 in [selected_piece_pos[0]-1, selected_piece_pos[0]+1] and selected_piece_pos == possibleEnpassants[0]:
+                    #     board[selected_piece_pos[1]][selected_piece_pos[0]] = 0
+                    #     board[event.pos[1]//100][event.pos[0]//100] = piece
+                    #     if (event.pos[0]//100, event.pos[1]//100) == (selected_piece_pos[0]+1, selected_piece_pos[1]+1) and possibleEnpassants[1] == 'R':
+                    #         board[selected_piece_pos[1]][selected_piece_pos[0]+1] = 0
+                            
+                    #     else:
+                    #         board[selected_piece_pos[1]][selected_piece_pos[0]-1] = 0
+                                     
+                    #     possibleEnpassants.clear()
+                    #     turn = 0
 
                     else:
                         board[selected_piece_pos[1]][selected_piece_pos[0]] = 0
@@ -408,7 +413,7 @@ while run:
                     if piece == 'white king' and (event.pos[0]//100, event.pos[1]//100) in [(selected_piece_pos[0] + 2, selected_piece_pos[1]), (selected_piece_pos[0] - 2, selected_piece_pos[1])]:
                         board[selected_piece_pos[1]][selected_piece_pos[0]] = 0
                         board[event.pos[1]//100][event.pos[0]//100] = piece
-                        if board[selected_piece_pos[1]][selected_piece_pos[0] + 3] == 'white rook':
+                        if (event.pos[0]//100, event.pos[1]//100) == (selected_piece_pos[0] + 2, selected_piece_pos[1]):
                             r = board[selected_piece_pos[1]][selected_piece_pos[0] + 3]
                             board[selected_piece_pos[1]][selected_piece_pos[0] + 3] = 0
                             board[selected_piece_pos[1]][selected_piece_pos[0] + 1] = r
@@ -423,16 +428,16 @@ while run:
                         turn += 1
 
                     #Check En-Passant Move
-                    elif piece == 'white pawn' and (event.pos[0]//100, event.pos[1]//100) in [(selected_piece_pos[0]+1, selected_piece_pos[1]-1), (selected_piece_pos[0]-1, selected_piece_pos[1]-1)] and (EnPassantL or EnPassantR):
-                        board[selected_piece_pos[1]][selected_piece_pos[0]] = 0
-                        board[event.pos[1]//100][event.pos[0]//100] = piece
-                        if (event.pos[0]//100, event.pos[1]//100) == (selected_piece_pos[0]+1, selected_piece_pos[1]+1) and EnPassantR:
-                            board[selected_piece_pos[1]][selected_piece_pos[0]+1] = 0
+                    # elif piece == 'white pawn' and (event.pos[0]//100, event.pos[1]//100) in [(selected_piece_pos[0]+1, selected_piece_pos[1]-1), (selected_piece_pos[0]-1, selected_piece_pos[1]-1)]:
+                    #     board[selected_piece_pos[1]][selected_piece_pos[0]] = 0
+                    #     board[event.pos[1]//100][event.pos[0]//100] = piece
+                    #     if (event.pos[0]//100, event.pos[1]//100) == (selected_piece_pos[0]+1, selected_piece_pos[1]+1):
+                    #         board[selected_piece_pos[1]][selected_piece_pos[0]+1] = 0
 
-                        else:
-                            board[selected_piece_pos[1]][selected_piece_pos[0]-1] = 0
+                    #     else:
+                    #         board[selected_piece_pos[1]][selected_piece_pos[0]-1] = 0
 
-                        turn += 1
+                    #     turn += 1
 
                     else:
                         board[selected_piece_pos[1]][selected_piece_pos[0]] = 0
@@ -465,7 +470,7 @@ while run:
                     turn += 1
                     selected_piece_pos = [event.pos[0]//100, event.pos[1]//100]
                     legal_moves = check_legal_moves_of_selected_piece(selected_piece_pos[0], selected_piece_pos[1])
-            
+
             else:
                 turn -= 1
 
