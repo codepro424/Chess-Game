@@ -328,7 +328,7 @@ while run:
     if len(white_legal_moves) == 0 or len(black_legal_moves) == 0:
         run = False
     for i in range(len(board)):
-        for j in range(board[i]):
+        for j in range(len(board[i])):
             if board[i][j] != 0:
                 number_of_pieces += 1
     
